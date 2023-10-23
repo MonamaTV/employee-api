@@ -1,8 +1,9 @@
 const express = require("express");
+const cors = require("cors")
 const { db, auth } = require("./firebase");
 
 const app = express();
-
+app.use(cors())
 app.use(express.json());
 app.use(express.raw());
 // The admin logs in
@@ -32,13 +33,17 @@ app.post("/register", async (req, res) => {
   }
 });
 
+// Add new employee
 app.post("/employees", async (req, res) => {
-  const { name, surname, age } = req.body;
+ 
+  const { name, surname, phone, email, position } = req.body;
   try {
     await db.collection("employees").add({
       name,
       surname,
-      age,
+      phone, 
+      email,
+      position,
       adminID: 2222,
     });
     res.json({
@@ -70,7 +75,7 @@ app.patch("/employees/:id", async (req, res) => {
   } catch (error) {
     console.log(error);
     res.json({
-      message: "Employee could not be updated",
+      message: "Employee has not been updated",
       code: 400,
       success: false,
     });
@@ -78,10 +83,13 @@ app.patch("/employees/:id", async (req, res) => {
 });
 
 app.get("/employees", async (req, res) => {
+
+  const headers = req.headers["authorization"]
+  console.log(headers)
   try {
     const dbUsers = await db
       .collection("employees")
-      .where("adminID", "==", 123)
+      .where("adminID", "==", 2222)
       .get();
 
     const users = [];
@@ -115,7 +123,7 @@ app.get("/employees/:id", async (req, res) => {
 
     const user = { ...dbUser.data() };
 
-    if (user.adminID !== 1123) {
+    if (user.adminID !== 2222) {
       return res.json({
         message: "User does not exist",
         success: false,
@@ -124,7 +132,7 @@ app.get("/employees/:id", async (req, res) => {
     }
 
     res.json({
-      message: "Employee",
+      message: "Employee details",
       code: 200,
       success: true,
       data: user,
