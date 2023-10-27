@@ -1,50 +1,33 @@
 const express = require("express");
-const cors = require("cors")
+const cors = require("cors");
 const { db, auth } = require("./firebase");
+const { verifyUser } = require("./authenticate.js");
 
 const app = express();
-app.use(cors())
+app.use(cors());
 app.use(express.json());
 app.use(express.raw());
 // The admin logs in
+app.use(verifyUser);
 
-app.post("/register", async (req, res) => {
-  const { name, password, email } = req.body;
-  try {
-    await auth.createUser({
-      displayName: name,
-      password: password,
-      email: email,
-      disabled: false,
-    });
-
-    res.json({
-      message: "Admin has been registered",
-      code: 201,
-      success: true,
-    });
-  } catch (error) {
-    console.log(error);
-    res.json({
-      message: "Failed to register the user",
-      code: 400,
-      success: false,
-    });
-  }
+app.get("/", (req, res) => {
+  res.send({
+    message: "hello, world",
+  });
 });
 
 // Add new employee
 app.post("/employees", async (req, res) => {
- 
   const { name, surname, phone, email, position } = req.body;
+  const userID = req.userID;
   try {
     await db.collection("employees").add({
       name,
       surname,
-      phone, 
+      phone,
       email,
       position,
-      adminID: 2222,
+      adminID: userID,
     });
     res.json({
       message: "New employee has been added",
@@ -52,6 +35,7 @@ app.post("/employees", async (req, res) => {
       success: true,
     });
   } catch (error) {
+    console.log(error);
     res.json({
       message: "Employee could not be added",
       code: 400,
@@ -83,13 +67,12 @@ app.patch("/employees/:id", async (req, res) => {
 });
 
 app.get("/employees", async (req, res) => {
+  const userID = req.userID;
 
-  const headers = req.headers["authorization"]
-  console.log(headers)
   try {
     const dbUsers = await db
       .collection("employees")
-      .where("adminID", "==", 2222)
+      .where("adminID", "==", userID)
       .get();
 
     const users = [];
@@ -118,12 +101,13 @@ app.get("/employees", async (req, res) => {
 
 app.get("/employees/:id", async (req, res) => {
   const { id } = req.params;
+  const userID = req.userID;
   try {
     const dbUser = await db.collection("employees").doc(id).get();
 
     const user = { ...dbUser.data() };
 
-    if (user.adminID !== 2222) {
+    if (user.adminID !== userID) {
       return res.json({
         message: "User does not exist",
         success: false,
