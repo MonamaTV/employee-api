@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const { db, auth } = require("./firebase");
 const { verifyUser } = require("./authenticate.js");
+const { sendEmail } = require("./mail");
 
 const app = express();
 app.use(cors());
@@ -144,6 +145,33 @@ app.delete("/employees/:id", async (req, res) => {
     res.json({
       message: "Employee could not be deleted",
       code: 400,
+      success: false,
+    });
+  }
+});
+
+app.get("/send-welcome-email/:email", async (req, res) => {
+  const email = req.params.email;
+
+  if (!email) {
+    return res.status(400).json({
+      message: "The email is invalid",
+      code: 400,
+      success: false,
+    });
+  }
+
+  try {
+    const response = await sendEmail(email);
+    res.json({
+      message: "Email sent",
+      data: response,
+      success: true,
+    });
+  } catch (error) {
+    res.json({
+      message: "Email failed to send",
+      data: error,
       success: false,
     });
   }

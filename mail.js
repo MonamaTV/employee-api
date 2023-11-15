@@ -1,6 +1,5 @@
 const nodemailer = require("nodemailer");
 
-// Create a Nodemailer transporter with SMTP details
 const transporter = nodemailer.createTransport({
   host: "smtp.ethereal.email",
   port: 587,
@@ -11,19 +10,27 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Define the email options
-let mailOptions = {
-  from: "unique.howell@ethereal.email",
-  to: "youremailhere@gmail.com",
-  subject: "Testing Nodemailer with Gmail using host",
-  text: "This is a test email sent using Nodemailer with Gmail via host settings.",
+const sendEmail = async (email) => {
+  let mailOptions = {
+    from: "unique.howell@ethereal.email",
+    to: email,
+    subject: "Subject for your welcome emails",
+    text: "The content about successful registraion",
+  };
+
+  response = transporter.sendMail(mailOptions, function (error, info) {
+    if (error) {
+      console.log(error);
+      return false;
+    } else {
+      console.log("Email sent: " + info);
+      return true;
+    }
+  });
+
+  return response;
 };
 
-// Send the email
-transporter.sendMail(mailOptions, function (error, info) {
-  if (error) {
-    console.log(error);
-  } else {
-    console.log("Email sent: " + info);
-  }
-});
+module.exports = {
+  sendEmail,
+};
