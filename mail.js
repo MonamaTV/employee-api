@@ -4,6 +4,7 @@ const nodemailer = require("nodemailer");
 const transporter = nodemailer.createTransport({
   host: "smtp.ethereal.email",
   port: 587,
+  security: "STARTTLS",
   auth: {
     user: "unique.howell@ethereal.email",
     pass: "gwZZg82EpyNwUP4cWZ",
@@ -13,7 +14,7 @@ const transporter = nodemailer.createTransport({
 // Define the email options
 let mailOptions = {
   from: "unique.howell@ethereal.email",
-  to: "keletsovincent92@gmail.com",
+  to: "youremailhere@gmail.com",
   subject: "Testing Nodemailer with Gmail using host",
   text: "This is a test email sent using Nodemailer with Gmail via host settings.",
 };
